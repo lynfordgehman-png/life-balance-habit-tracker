@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Life Balance">
+  <title>Life Balance Habit Tracker</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1 id="page-title">Habits</h1>
+    <div id="header-actions" class="header-actions"></div>
+  </header>
+
+  <main>
+    <section id="page-habits" class="page"></section>
+    <section id="page-quests" class="page hidden"></section>
+    <section id="page-goals" class="page hidden"></section>
+  </main>
+
+  <nav class="tab-bar" role="tablist">
+    <button type="button" class="tab on" data-page="habits" role="tab" aria-selected="true">
+      <span class="tab-icon">☑︎</span><span>Habits</span>
+    </button>
+    <button type="button" class="tab" data-page="quests" role="tab" aria-selected="false">
+      <span class="tab-icon">⚑</span><span>Quests</span>
+    </button>
+    <button type="button" class="tab" data-page="goals" role="tab" aria-selected="false">
+      <span class="tab-icon">◎</span><span>Goals</span>
+    </button>
+  </nav>
+
+  <dialog id="sheet">
+    <h2 id="sheet-title"></h2>
+    <div id="sheet-body"></div>
+  </dialog>
+
+  <div id="lock-screen" class="lock-screen hidden">
+    <div class="lock-card">
+      <p class="lock-icon">🔒</p>
+      <h2>Locked</h2>
+      <form id="lock-form">
+        <input type="password" id="lock-password" placeholder="Password" autocomplete="current-password">
+        <p id="lock-error" class="error hidden">Wrong password</p>
+        <button type="submit" class="btn primary">Unlock</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/model.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/lock.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/habits.js"></script>
+  <script src="js/quests.js"></script>
+  <script src="js/goals.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
