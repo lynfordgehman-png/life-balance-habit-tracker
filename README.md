@@ -67,3 +67,16 @@ After editing any file, bump `CACHE` in `sw.js` so browsers pick up the new copy
   number of weeks.
 - **Weekly percentage** is red to 60%, yellow 61–79%, green 80% and up.
 - **Deleting a category deletes its goals.** You are asked first, with the count.
+
+## Later additions
+
+- **One week of habit history.** `‹` and `›` above the habit cards step between this
+  week and last week. Last week is fully editable — no day is greyed out — and the
+  count badges recalculate for the week on screen. History stops at one week back.
+- **Carrying a quest forward.** Once a week has reached its last day, an unfinished
+  one-off quest offers *Move to week N*. The copy lands in the next week and the
+  original stays put and unfinished, so that week's percentage still tells the truth.
+  Quests that already repeat, or are already done, are never offered.
+- **Printable progress report.** Goals page → `⋯` → *Print Progress Report*. Every
+  category, goal and quest with its state, plus per-goal and overall totals. Print
+  styles drop the app chrome and print black on white.

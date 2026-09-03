@@ -526,3 +526,175 @@ dialog h2 { margin: 0 0 16px; font-size: 20px; }
 .lock-icon { font-size: 40px; margin: 0 0 8px; }
 .lock-card h2 { margin: 0 0 20px; }
 .lock-card form { display: flex; flex-direction: column; gap: 10px; }
+
+/* ------------------------------------------------- week history (habits) */
+
+.hist-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.hist-arrow {
+  width: 36px; height: 36px;
+  border: 0; border-radius: 999px;
+  background: none;
+  color: var(--accent);
+  font-size: 24px; line-height: 1;
+  cursor: pointer;
+}
+
+.hist-arrow:disabled { color: var(--text-faint); opacity: 0.35; cursor: default; }
+
+.hist-label { margin: 0; text-align: center; }
+
+.hist-when {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.hist-range { display: block; font-size: 13px; color: var(--text-faint); }
+
+/* ------------------------------------------------ carry forward (quests) */
+
+.quest-item { border-top: 1px solid var(--line); }
+.quest-group h3 + .quest-item { border-top: 0; }
+.quest-item .quest-row { border-top: 0; }
+
+.carry-btn {
+  margin: 0 0 10px 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.carried {
+  margin: 0 0 10px 36px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ---------------------------------------------------- progress report */
+
+.report {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  overflow-y: auto;
+  background: var(--bg);
+  padding: calc(env(safe-area-inset-top) + 12px) 16px 40px;
+}
+
+body.reporting { overflow: hidden; }
+
+.report-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  max-width: 720px;
+  margin: 0 auto 16px;
+}
+
+.report-sheet {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.report-head { border-bottom: 2px solid var(--text); padding-bottom: 14px; margin-bottom: 8px; }
+.report-head h1 { margin: 0 0 4px; font-size: 26px; font-weight: 800; }
+.report-meta { margin: 0; font-size: 13px; color: var(--text-dim); }
+.report-total { margin: 10px 0 0; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.report-category { margin-top: 22px; }
+
+.report-category h2 {
+  margin: 0 0 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.report-goal { margin: 0 0 18px; break-inside: avoid; }
+
+.report-goal h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.report-score {
+  flex: none;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.report-week { display: flex; gap: 12px; padding: 3px 0; }
+
+.report-week-label {
+  flex: none;
+  width: 62px;
+  margin: 2px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.report-week ul { margin: 0; padding: 0; list-style: none; flex: 1; }
+.report-week li { display: flex; gap: 8px; padding: 2px 0; font-size: 15px; }
+.report-week li.is-done { color: var(--text-dim); }
+.is-done .report-quest { text-decoration: line-through; }
+/* The strikethrough sits on the text, so it never runs through the tick. */
+.report-mark { flex: none; width: 14px; font-weight: 700; }
+.is-done .report-mark { color: var(--band-green); }
+.is-open .report-mark { color: var(--text-faint); }
+
+.report-empty { margin: 4px 0; font-size: 14px; color: var(--text-faint); }
+
+/* Paper: only the report, in black on white, no app chrome. */
+@media print {
+  .app-header, .tab-bar, main, dialog, .lock-screen, .report-tools { display: none !important; }
+
+  body { background: #fff; color: #000; }
+
+  .report {
+    position: static;
+    overflow: visible;
+    padding: 0;
+    background: #fff;
+  }
+
+  .report-sheet { max-width: none; padding: 0; border-radius: 0; background: #fff; }
+  .report-head { border-bottom: 2px solid #000; }
+  .report-meta, .report-score, .report-week-label, .report-empty { color: #444; }
+  .report-category h2 { color: #000; border-bottom-color: #999; }
+  .report-week li.is-done { color: #444; }
+  .is-done .report-mark, .is-open .report-mark { color: #000; }
+  .report-goal { page-break-inside: avoid; }
+
+  @page { margin: 16mm; }
+}

@@ -54,7 +54,7 @@ App.quests = (function () {
       '</section>' +
 
       (groups.length
-        ? groups.map(groupHTML).join('')
+        ? groups.map(function (group) { return groupHTML(group, current); }).join('')
         : '<p class="note">No quests scheduled for this week.</p>');
 
     page.querySelectorAll('[data-step]').forEach(function (button) {
@@ -69,20 +69,51 @@ App.quests = (function () {
         store.toggleQuest(row.dataset.quest);
       });
     });
+
+    page.querySelectorAll('[data-carry]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        store.carryForward(button.dataset.carry);
+      });
+    });
   }
 
-  function groupHTML(group) {
+  /**
+   * The carry-forward offer only makes sense once the week is finished —
+   * on its last day, or any time after it has passed.
+   */
+  function weekIsOver(week) {
+    const end = model.weekRange(store.plan(), week).end;
+    return model.startOfDay(new Date()) >= model.startOfDay(end);
+  }
+
+  function groupHTML(group, week) {
+    const offerCarry = weekIsOver(week);
+
     return '<section class="quest-group tint-' + (group.index % model.TINT_COUNT) + '">' +
       '<h3>' + ui.esc(group.category.name) + '</h3>' +
       group.entries.map(function (entry) {
-        return '<button type="button" class="quest-row' + (entry.quest.isCompleted ? ' done' : '') + '"' +
-          ' data-quest="' + entry.quest.id + '" aria-pressed="' + entry.quest.isCompleted + '">' +
-          '<span class="checkbox">' + (entry.quest.isCompleted ? '✓' : '') + '</span>' +
-          '<span class="quest-text">' +
-            '<span class="quest-title">' + ui.esc(entry.quest.title) + '</span>' +
-            '<span class="quest-goal">' + ui.esc(entry.goal.title) + '</span>' +
-          '</span>' +
-        '</button>';
+        const quest = entry.quest;
+        let carry = '';
+
+        if (offerCarry && !quest.isCompleted) {
+          if (store.alreadyCarried(quest)) {
+            carry = '<p class="carried">Carried into week ' + (quest.week + 1) + '</p>';
+          } else if (store.canCarryForward(quest)) {
+            carry = '<button type="button" class="carry-btn" data-carry="' + quest.id + '">' +
+              'Move to week ' + (quest.week + 1) + '</button>';
+          }
+        }
+
+        return '<div class="quest-item">' +
+          '<button type="button" class="quest-row' + (quest.isCompleted ? ' done' : '') + '"' +
+            ' data-quest="' + quest.id + '" aria-pressed="' + quest.isCompleted + '">' +
+            '<span class="checkbox">' + (quest.isCompleted ? '✓' : '') + '</span>' +
+            '<span class="quest-text">' +
+              '<span class="quest-title">' + ui.esc(quest.title) + '</span>' +
+              '<span class="quest-goal">' + ui.esc(entry.goal.title) + '</span>' +
+            '</span>' +
+          '</button>' + carry +
+        '</div>';
       }).join('') +
     '</section>';
   }

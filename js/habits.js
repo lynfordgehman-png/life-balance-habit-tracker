@@ -10,9 +10,16 @@ App.habits = (function () {
   const store = App.store;
   const ui = App.ui;
 
+  // 0 is this week, -1 is last week. One week of history, no further.
+  let weekOffset = 0;
+
+  function shownDays() {
+    return model.weekDays(model.addDays(new Date(), weekOffset * 7));
+  }
+
   function render() {
     const page = ui.el('#page-habits');
-    const days = model.weekDays();
+    const days = shownDays();
     const habits = store.sortedHabits();
 
     if (!habits.length) {
@@ -26,9 +33,15 @@ App.habits = (function () {
       return;
     }
 
-    page.innerHTML =
-      '<p class="week-range">' + ui.esc(model.rangeLabel(days[0], days[6]).toUpperCase()) + '</p>' +
+    page.innerHTML = weekBarHTML(days) +
       habits.map(function (habit) { return cardHTML(habit, days); }).join('');
+
+    page.querySelectorAll('[data-week-step]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        weekOffset = Math.min(0, Math.max(-1, weekOffset + Number(button.dataset.weekStep)));
+        render();
+      });
+    });
 
     page.querySelectorAll('.habit-card').forEach(function (card) {
       const habit = store.habit(card.dataset.habit);
@@ -46,6 +59,20 @@ App.habits = (function () {
         );
       });
     });
+  }
+
+  /** Week label with a step back into last week, and forward again. */
+  function weekBarHTML(days) {
+    return '<div class="hist-bar">' +
+      '<button type="button" class="hist-arrow" data-week-step="-1"' +
+        (weekOffset <= -1 ? ' disabled' : '') + ' aria-label="Last week">‹</button>' +
+      '<p class="hist-label">' +
+        '<span class="hist-when">' + (weekOffset === 0 ? 'This week' : 'Last week') + '</span>' +
+        '<span class="hist-range">' + ui.esc(model.rangeLabel(days[0], days[6])) + '</span>' +
+      '</p>' +
+      '<button type="button" class="hist-arrow" data-week-step="1"' +
+        (weekOffset >= 0 ? ' disabled' : '') + ' aria-label="This week">›</button>' +
+    '</div>';
   }
 
   function cardHTML(habit, days) {
@@ -232,5 +259,10 @@ App.habits = (function () {
       : "More than seven a week, so each tap raises that day's count. " + target + ' taps make a full week.';
   }
 
-  return { render: render, openEditor: openEditor };
+  /** Coming back to the page always starts on this week. */
+  function resetWeek() {
+    weekOffset = 0;
+  }
+
+  return { render: render, openEditor: openEditor, resetWeek: resetWeek };
 })();

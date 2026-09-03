@@ -45,11 +45,16 @@ window.App = window.App || {};
       menuButton.addEventListener('click', function () {
         ui.openSheet('Options',
           '<div class="sheet-actions column">' +
+            '<button type="button" class="btn" data-role="report">Print Progress Report</button>' +
             '<button type="button" class="btn" data-role="categories">Edit Categories</button>' +
             '<button type="button" class="btn" data-role="due">Set Due Date</button>' +
             '<button type="button" class="btn quiet" data-role="cancel">Cancel</button>' +
           '</div>',
           function (body) {
+            body.querySelector('[data-role="report"]').addEventListener('click', function () {
+              ui.closeSheet();
+              App.report.open();
+            });
             body.querySelector('[data-role="categories"]').addEventListener('click', function () {
               ui.closeSheet();
               App.goals.openCategories();
@@ -194,6 +199,9 @@ window.App = window.App || {};
     document.querySelectorAll('.tab').forEach(function (tab) {
       tab.addEventListener('click', function () {
         current = tab.dataset.page;
+        // Each page opens on the present, not wherever it was left.
+        if (current === 'habits') App.habits.resetWeek();
+        if (current === 'quests') App.quests.resetWeek();
         renderAll();
       });
     });

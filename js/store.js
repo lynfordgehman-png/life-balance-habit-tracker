@@ -203,12 +203,14 @@ App.store = (function () {
     return quests
       .filter(function (quest) { return quest.title.trim(); })
       .map(function (quest) {
-        return {
+        const cleaned = {
           id: quest.id || uuid(),
           week: quest.week,
           title: quest.title.trim(),
           isCompleted: !!quest.isCompleted
         };
+        if (quest.carriedFrom !== undefined) cleaned.carriedFrom = quest.carriedFrom;
+        return cleaned;
       })
       .sort(function (a, b) { return a.week - b.week; });
   }
@@ -263,6 +265,65 @@ App.store = (function () {
       if (entries.length) groups.push({ category: category, index: index, entries: entries });
     });
     return groups;
+  }
+
+  /** True when the same wording appears in more than one week of this goal. */
+  function questRepeats(goal, quest) {
+    const title = quest.title.trim().toLowerCase();
+    return goal.quests.filter(function (other) {
+      return other.title.trim().toLowerCase() === title;
+    }).length > 1;
+  }
+
+  function goalOfQuest(questId) {
+    return goals.find(function (goal) {
+      return goal.quests.some(function (quest) { return quest.id === questId; });
+    }) || null;
+  }
+
+  /**
+   * A one-off quest that was missed can be carried into next week.
+   * It stays put in its own week so that week's percentage tells the truth.
+   */
+  function canCarryForward(quest) {
+    const goal = goalOfQuest(quest.id);
+    if (!goal || quest.isCompleted) return false;
+    if (quest.week >= weekCount()) return false;
+    if (questRepeats(goal, quest)) return false;
+    const title = quest.title.trim().toLowerCase();
+    return !goal.quests.some(function (other) {
+      return other.week === quest.week + 1 && other.title.trim().toLowerCase() === title;
+    });
+  }
+
+  /** Copies the quest into the following week, leaving the original untouched. */
+  function carryForward(questId) {
+    const goal = goalOfQuest(questId);
+    if (!goal) return false;
+    const quest = goal.quests.find(function (item) { return item.id === questId; });
+    if (!quest || !canCarryForward(quest)) return false;
+    // carriedFrom marks this as a copy, so the original can say where it went
+    // without a genuinely repeating quest being mistaken for one.
+    goal.quests.push({
+      id: uuid(),
+      week: quest.week + 1,
+      title: quest.title,
+      isCompleted: false,
+      carriedFrom: quest.week
+    });
+    goal.quests.sort(function (a, b) { return a.week - b.week; });
+    saveGoals();
+    return true;
+  }
+
+  /** True once this quest has been copied forward from here. */
+  function alreadyCarried(quest) {
+    const goal = goalOfQuest(quest.id);
+    if (!goal) return false;
+    const title = quest.title.trim().toLowerCase();
+    return goal.quests.some(function (other) {
+      return other.carriedFrom === quest.week && other.title.trim().toLowerCase() === title;
+    });
   }
 
   function toggleQuest(questId) {
@@ -325,6 +386,11 @@ App.store = (function () {
 
     categoryEntries: categoryEntries,
     toggleQuest: toggleQuest,
+    questRepeats: questRepeats,
+    goalOfQuest: goalOfQuest,
+    canCarryForward: canCarryForward,
+    carryForward: carryForward,
+    alreadyCarried: alreadyCarried,
     completionRate: completionRate,
     hasAnyQuests: hasAnyQuests
   };
