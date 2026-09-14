@@ -2,7 +2,7 @@
  * sw.js — offline app shell.
  * Bump CACHE when you change any file below, so browsers pick up the new copy.
  */
-const CACHE = 'life-balance-v3';
+const CACHE = 'life-balance-v4';
 
 const SHELL = [
   './',

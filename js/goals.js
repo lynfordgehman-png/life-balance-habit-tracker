@@ -222,6 +222,19 @@ App.goals = (function () {
           });
         }
 
+        /**
+         * Picks up any quest typed but never submitted with Add or All weeks,
+         * so leaving a draft and tapping Save doesn't just drop it. Defaults
+         * it to that one week — the same as tapping Add.
+         */
+        function commitAllDrafts() {
+          weeksHost.querySelectorAll('[data-draft]').forEach(function (input) {
+            const text = input.value.trim();
+            if (!text) return;
+            quests.push({ id: store.uuid(), week: Number(input.dataset.draft), title: text, isCompleted: false });
+          });
+        }
+
         drawWeeks();
 
         body.querySelector('[data-role="cancel"]').addEventListener('click', ui.closeSheet);
@@ -229,6 +242,7 @@ App.goals = (function () {
           const title = body.querySelector('[data-field="title"]').value;
           const categoryID = body.querySelector('[data-field="category"]').value;
           if (!title.trim()) return;
+          commitAllDrafts();
           if (editing) store.updateGoal(goal.id, title, categoryID, quests);
           else store.addGoal(title, categoryID, quests);
           ui.closeSheet();
