@@ -24,11 +24,15 @@ window.App = window.App || {};
     actions.innerHTML = current === 'habits'
       ? '<button type="button" class="icon-btn" id="action-lock" aria-label="Password lock">' +
           (lock.isEnabled() ? '🔒' : '🔓') + '</button>' +
-        '<button type="button" class="icon-btn" id="action-add" aria-label="Add habit">＋</button>'
+        '<button type="button" class="icon-btn" id="action-add"' +
+          (App.habits.isCurrentWeek() ? '' : ' disabled') + ' aria-label="Add habit">＋</button>'
       : current === 'goals'
         ? '<button type="button" class="icon-btn" id="action-menu" aria-label="Options">⋯</button>' +
           '<button type="button" class="icon-btn" id="action-add" aria-label="Add goal">＋</button>'
-        : '';
+        : current === 'quests'
+          ? '<button type="button" class="icon-btn" id="action-review"' +
+              (App.review.isActive() ? ' disabled' : '') + ' aria-label="Weekly review">📝</button>'
+          : '';
 
     const addButton = ui.el('#action-add');
     if (addButton) {
@@ -39,6 +43,9 @@ window.App = window.App || {};
     }
     const lockButton = ui.el('#action-lock');
     if (lockButton) lockButton.addEventListener('click', openLockSettings);
+
+    const reviewButton = ui.el('#action-review');
+    if (reviewButton) reviewButton.addEventListener('click', function () { App.review.promptStart(); });
 
     const menuButton = ui.el('#action-menu');
     if (menuButton) {
@@ -81,6 +88,15 @@ window.App = window.App || {};
   function renderAll() {
     renderChrome();
     PAGES[current].render();
+    App.review.render();
+  }
+
+  /** The one place tabs actually change, so the weekly review can drive them too. */
+  function switchTab(name) {
+    current = name;
+    if (current === 'habits') App.habits.resetWeek();
+    if (current === 'quests') App.quests.resetWeek();
+    renderAll();
   }
 
   // ----------------------------------------------------------------- lock
@@ -195,15 +211,11 @@ window.App = window.App || {};
 
   // ----------------------------------------------------------------- boot
 
+  App.nav = { switchTab: switchTab, currentTab: function () { return current; }, refreshChrome: renderChrome };
+
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.tab').forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        current = tab.dataset.page;
-        // Each page opens on the present, not wherever it was left.
-        if (current === 'habits') App.habits.resetWeek();
-        if (current === 'quests') App.quests.resetWeek();
-        renderAll();
-      });
+      tab.addEventListener('click', function () { switchTab(tab.dataset.page); });
     });
 
     ui.el('#lock-form').addEventListener('submit', async function (event) {

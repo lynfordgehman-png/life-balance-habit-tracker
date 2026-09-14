@@ -10,8 +10,13 @@ App.habits = (function () {
   const store = App.store;
   const ui = App.ui;
 
-  // 0 is this week, -1 is last week. One week of history, no further.
+  // 0 is this week, -4 is four weeks back. Four weeks of history, no further.
+  const HISTORY_WEEKS = 4;
   let weekOffset = 0;
+
+  function isCurrentWeek() {
+    return weekOffset === 0;
+  }
 
   function shownDays() {
     return model.weekDays(model.addDays(new Date(), weekOffset * 7));
@@ -20,34 +25,41 @@ App.habits = (function () {
   function render() {
     const page = ui.el('#page-habits');
     const days = shownDays();
-    const habits = store.sortedHabits();
+    const current = isCurrentWeek();
+    const habits = store.habitsForWeek(days, current);
 
     if (!habits.length) {
-      page.innerHTML =
-        '<div class="empty">' +
-          '<h2>No Habits Yet</h2>' +
-          '<p>Add a habit and choose how many times a day or week you want to do it.</p>' +
-          '<button type="button" class="btn primary" id="empty-add-habit">Add Habit</button>' +
-        '</div>';
-      page.querySelector('#empty-add-habit').addEventListener('click', function () { openEditor(null); });
+      // On the current week with nothing ever added, the big first-run CTA.
+      // On a past week, adding isn't available there, so just say so.
+      page.innerHTML = current
+        ? weekBarHTML(days) +
+          '<div class="empty">' +
+            '<h2>No Habits Yet</h2>' +
+            '<p>Add a habit and choose how many times a day or week you want to do it.</p>' +
+            '<button type="button" class="btn primary" id="empty-add-habit">Add Habit</button>' +
+          '</div>'
+        : weekBarHTML(days) +
+          '<p class="note">No habits were tracked this week.</p>';
+
+      const addButton = page.querySelector('#empty-add-habit');
+      if (addButton) addButton.addEventListener('click', function () { openEditor(null); });
+      wireWeekBar(page);
       return;
     }
 
     page.innerHTML = weekBarHTML(days) +
       habits.map(function (habit) { return cardHTML(habit, days); }).join('');
 
-    page.querySelectorAll('[data-week-step]').forEach(function (button) {
-      button.addEventListener('click', function () {
-        weekOffset = Math.min(0, Math.max(-1, weekOffset + Number(button.dataset.weekStep)));
-        render();
-      });
-    });
+    wireWeekBar(page);
 
     page.querySelectorAll('.habit-card').forEach(function (card) {
       const habit = store.habit(card.dataset.habit);
       if (!habit) return;
 
-      ui.attachPress(card.querySelector('.habit-head'), null, function () { openActions(habit); });
+      ui.attachPress(card.querySelector('.habit-head'), null, function () {
+        if (isCurrentWeek()) openActions(habit);
+        else openHistoryNotice();
+      });
 
       card.querySelectorAll('.day-box').forEach(function (box) {
         if (box.disabled) return;
@@ -61,18 +73,55 @@ App.habits = (function () {
     });
   }
 
-  /** Week label with a step back into last week, and forward again. */
+  function wireWeekBar(page) {
+    page.querySelectorAll('[data-week-step]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        weekOffset = Math.min(0, Math.max(-HISTORY_WEEKS, weekOffset + Number(button.dataset.weekStep)));
+        render();
+        // The header's Add button depends on which week is showing, so refresh it too.
+        App.nav.refreshChrome();
+      });
+    });
+  }
+
+  function weekLabel() {
+    if (weekOffset === 0) return 'This week';
+    if (weekOffset === -1) return 'Last week';
+    return Math.abs(weekOffset) + ' weeks ago';
+  }
+
+  /** Week label with a step back into history, and forward again. */
   function weekBarHTML(days) {
     return '<div class="hist-bar">' +
       '<button type="button" class="hist-arrow" data-week-step="-1"' +
-        (weekOffset <= -1 ? ' disabled' : '') + ' aria-label="Last week">‹</button>' +
+        (weekOffset <= -HISTORY_WEEKS ? ' disabled' : '') + ' aria-label="Previous week">‹</button>' +
       '<p class="hist-label">' +
-        '<span class="hist-when">' + (weekOffset === 0 ? 'This week' : 'Last week') + '</span>' +
+        '<span class="hist-when">' + ui.esc(weekLabel()) + '</span>' +
         '<span class="hist-range">' + ui.esc(model.rangeLabel(days[0], days[6])) + '</span>' +
       '</p>' +
       '<button type="button" class="hist-arrow" data-week-step="1"' +
         (weekOffset >= 0 ? ' disabled' : '') + ' aria-label="This week">›</button>' +
     '</div>';
+  }
+
+  /** Shown instead of the edit/delete menu when holding a card outside the current week. */
+  function openHistoryNotice() {
+    ui.openSheet('Past Week',
+      '<p class="sheet-message">Adding, editing and deleting habits only applies to the current week. ' +
+        'Switch to this week to make changes — what you see here stays exactly as it happened.</p>' +
+      '<div class="sheet-actions">' +
+        '<button type="button" class="btn" data-role="close">Close</button>' +
+        '<button type="button" class="btn primary" data-role="now">Go to This Week</button>' +
+      '</div>',
+      function (body) {
+        body.querySelector('[data-role="close"]').addEventListener('click', ui.closeSheet);
+        body.querySelector('[data-role="now"]').addEventListener('click', function () {
+          weekOffset = 0;
+          ui.closeSheet();
+          render();
+          App.nav.refreshChrome();
+        });
+      });
   }
 
   function cardHTML(habit, days) {
@@ -264,5 +313,5 @@ App.habits = (function () {
     weekOffset = 0;
   }
 
-  return { render: render, openEditor: openEditor, resetWeek: resetWeek };
+  return { render: render, openEditor: openEditor, resetWeek: resetWeek, isCurrentWeek: isCurrentWeek };
 })();

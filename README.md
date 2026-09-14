@@ -50,6 +50,8 @@ you care about before doing that.
     js/habits.js          daily habits page
     js/quests.js          weekly quests page
     js/goals.js           12 week goals, categories, goal editor
+    js/report.js          printable progress report
+    js/review.js          the weekly review flow
     js/app.js             tabs, lock screen, service worker registration
 
 After editing any file, bump `CACHE` in `sw.js` so browsers pick up the new copy.
@@ -80,3 +82,16 @@ After editing any file, bump `CACHE` in `sw.js` so browsers pick up the new copy
 - **Printable progress report.** Goals page → `⋯` → *Print Progress Report*. Every
   category, goal and quest with its state, plus per-goal and overall totals. Print
   styles drop the app chrome and print black on white.
+- **Four weeks of habit history.** `‹`/`›` above the habit cards step back up to four
+  weeks. Adding, editing and deleting a habit only ever acts on the current week —
+  deleting archives it (`archivedAt` on the habit) rather than erasing it, so it keeps
+  showing in the past weeks it was actually tracked and just stops appearing from the
+  current week on. A habit's `createdAt` also keeps it out of weeks before it existed,
+  even if you're looking at history. Holding a card outside the current week opens a
+  notice instead of the edit/delete menu.
+- **Weekly review.** Quests page → the pencil icon. A short guided flow: pick a week
+  (defaults to last week) → check off anything you missed → a rose-chart of each
+  category's completion for that week, equal-angle wedges with radius as the percent,
+  printable alongside the week's quest list → schedule next week's quests → jump to
+  Habits and name your daily focuses → a two-second congratulations. State lives only
+  in memory, so it doesn't survive a reload — a review is meant to happen in one sitting.

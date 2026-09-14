@@ -80,6 +80,21 @@ App.store = (function () {
     return model.sortHabits(habits);
   }
 
+  /**
+   * Habits visible for one week's date range. On the current week that's every
+   * active habit; on a past week it's whatever existed at some point during it,
+   * archived or not — so deleting a habit today doesn't erase it from last week.
+   */
+  function habitsForWeek(days, isCurrent) {
+    const weekStartMs = model.startOfDay(days[0]).getTime();
+    const weekEndMs = model.startOfDay(days[6]).getTime() + 86399999;
+    return model.sortHabits(habits.filter(function (item) {
+      if (item.createdAt > weekEndMs) return false;
+      if (isCurrent) return item.archivedAt === null || item.archivedAt === undefined;
+      return item.archivedAt === null || item.archivedAt === undefined || item.archivedAt > weekStartMs;
+    }));
+  }
+
   function addHabit(name, frequency, targetCount, scheduledMinutes) {
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -90,7 +105,8 @@ App.store = (function () {
       targetCount: Math.max(1, targetCount),
       scheduledMinutes: scheduledMinutes,
       completions: {},
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      archivedAt: null
     });
     saveHabits();
   }
@@ -106,8 +122,14 @@ App.store = (function () {
     saveHabits();
   }
 
+  /**
+   * Archives rather than erases, so the habit keeps showing in weeks where it
+   * was actually tracked. It just stops appearing from the current week on.
+   */
   function deleteHabit(id) {
-    habits = habits.filter(function (habit) { return habit.id !== id; });
+    const found = habits.find(function (item) { return item.id === id; });
+    if (!found) return;
+    found.archivedAt = Date.now();
     saveHabits();
   }
 
@@ -359,6 +381,7 @@ App.store = (function () {
 
     habits: function () { return habits; },
     sortedHabits: sortedHabits,
+    habitsForWeek: habitsForWeek,
     habit: habit,
     addHabit: addHabit,
     updateHabit: updateHabit,

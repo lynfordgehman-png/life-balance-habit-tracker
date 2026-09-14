@@ -31,6 +31,13 @@
   --tint-3: #f8efe7;
   --tint-4: #e7f3f3;
   --tint-5: #f8ecf1;
+
+  --pie-0: #2f9e57;
+  --pie-1: #2f6fd0;
+  --pie-2: #8a4fd1;
+  --pie-3: #c97a1a;
+  --pie-4: #159193;
+  --pie-5: #c9457a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -61,6 +68,13 @@
     --tint-3: #2e241b;
     --tint-4: #172b2b;
     --tint-5: #2e1d25;
+
+    --pie-0: #4cc47a;
+    --pie-1: #5b9bf5;
+    --pie-2: #a97ee0;
+    --pie-3: #e0a13f;
+    --pie-4: #37b8ba;
+    --pie-5: #e074a0;
   }
 }
 
@@ -675,9 +689,87 @@ body.reporting { overflow: hidden; }
 
 .report-empty { margin: 4px 0; font-size: 14px; color: var(--text-faint); }
 
+.report-flat-list { list-style: none; margin: 4px 0 14px; padding: 0; }
+.report-flat-list li { display: flex; align-items: baseline; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.report-flat-list li:first-child { border-top: 0; }
+.report-flat-list li.is-done { color: var(--text-dim); }
+.report-quest-goal { margin-left: auto; flex: none; font-size: 12px; color: var(--text-dim); }
+
+/* ------------------------------------------------------------ weekly review */
+
+.review-banner-host { max-width: 720px; margin: 12px auto 0; padding: 0 16px; }
+.review-banner-host.hidden { display: none; }
+
+.review-card {
+  margin: 0 0 14px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.review-banner-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.review-text { flex: 1; min-width: 180px; }
+.review-title { margin: 0; font-size: 15px; font-weight: 700; }
+.review-subtitle { margin: 2px 0 0; font-size: 13px; opacity: 0.9; }
+.review-control { flex: none; }
+
+.review-check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.review-check input { width: 20px; height: 20px; accent-color: #fff; }
+
+.review-banner-inner .btn { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.55); color: #fff; }
+.review-banner-inner .btn.primary { background: #fff; border-color: #fff; color: var(--accent); }
+
+.review-card.congrats .review-banner-inner { justify-content: center; text-align: center; }
+
+.review-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 0 16px 16px; background: var(--card); }
+
+/* ---------------------------------------------------------------- pie chart */
+
+.pie-panel {
+  padding: 16px;
+  background: var(--card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.pie-chart { width: 100%; max-width: 300px; height: auto; }
+.pie-track { fill: var(--text-faint); opacity: 0.16; stroke: var(--card); stroke-width: 2; }
+.pie-empty-wedge { fill: none; stroke: var(--text-faint); stroke-width: 1; stroke-dasharray: 4 3; }
+.pie-label { font-size: 11px; font-weight: 600; fill: var(--text); }
+.pie-empty { margin: 0; font-size: 14px; color: var(--text-faint); }
+
+.pie-legend { list-style: none; margin: 4px 0 0; padding: 0; width: 100%; max-width: 320px; }
+.pie-legend li { display: flex; align-items: center; gap: 8px; padding: 5px 2px; font-size: 13px; border-top: 1px solid var(--line); }
+.pie-legend li:first-child { border-top: 0; }
+.pie-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; }
+.pie-legend-name { flex: 1; color: var(--text); }
+.pie-legend-value { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+
 /* Paper: only the report, in black on white, no app chrome. */
 @media print {
-  .app-header, .tab-bar, main, dialog, .lock-screen, .report-tools { display: none !important; }
+  .app-header, .tab-bar, main, dialog, .lock-screen, .report-tools,
+  .review-banner-host { display: none !important; }
+
+  :root {
+    --pie-0: #2f9e57;
+    --pie-1: #2f6fd0;
+    --pie-2: #8a4fd1;
+    --pie-3: #c97a1a;
+    --pie-4: #159193;
+    --pie-5: #c9457a;
+  }
 
   body { background: #fff; color: #000; }
 
@@ -692,9 +784,18 @@ body.reporting { overflow: hidden; }
   .report-head { border-bottom: 2px solid #000; }
   .report-meta, .report-score, .report-week-label, .report-empty { color: #444; }
   .report-category h2 { color: #000; border-bottom-color: #999; }
-  .report-week li.is-done { color: #444; }
+  .report-week li.is-done, .report-flat-list li.is-done { color: #444; }
+  .report-quest-goal { color: #444; }
   .is-done .report-mark, .is-open .report-mark { color: #000; }
   .report-goal { page-break-inside: avoid; }
+
+  .pie-panel { background: #fff; padding: 0 0 16px; }
+  .pie-track { fill: #ccc; opacity: 1; stroke: #fff; }
+  .pie-empty-wedge { stroke: #999; }
+  .pie-label { fill: #000; }
+  .pie-legend-name { color: #000; }
+  .pie-legend-value { color: #444; }
+  .report-category { page-break-inside: avoid; }
 
   @page { margin: 16mm; }
 }

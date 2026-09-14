@@ -123,5 +123,11 @@ App.quests = (function () {
     selectedWeek = null;
   }
 
-  return { render: render, resetWeek: resetWeek };
+  /** Pins the page to a specific week — used by the weekly review to step through weeks. */
+  function showWeek(weekNumber) {
+    selectedWeek = weekNumber;
+    render();
+  }
+
+  return { render: render, resetWeek: resetWeek, showWeek: showWeek };
 })();
